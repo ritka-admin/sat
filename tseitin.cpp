@@ -22,7 +22,7 @@ z3::expr tseitin(std::string& current_node, Nodes& nodes, z3::context& context, 
         z3::expr_vector clause2(context);
         clause2.push_back(!left_var);
         clause2.push_back(!cur_var);
-        clause2.push_back(z3::mk_or(clause2));
+        clauses.push_back(z3::mk_or(clause2));
 
         return cur_var;
     }
@@ -132,6 +132,7 @@ z3::expr tseitin(std::string& current_node, Nodes& nodes, z3::context& context, 
         clause4.push_back(!left_var);
         clause4.push_back(right_var);
         clause4.push_back(cur_var);
+        clauses.push_back(z3::mk_or(clause4));
 
         return cur_var;
     }
@@ -145,5 +146,9 @@ void solve(std::string& output_node, Nodes& nodes) {
     tseitin(output_node, nodes, context, clauses);
     z3::solver solver(context);
     solver.add(clauses);
+    // TODO: manually add and and check
+    std::cout << solver.assertions() << '\n';
     std::cout << solver.check() << '\n';
+    // TODO: show only input nodes values
+    std::cout << solver.get_model() << '\n';
 }
