@@ -1,22 +1,12 @@
 #include "parse.h"
 #include <fstream>
-#include <unordered_map>
 
 
 // TODO: add node destructors
-CircuitNode::CircuitNode(size_t node_id, std::string& name, OP op = OP::NONE)
-: id(node_id), name(name), op(op)
+CircuitNode::CircuitNode(std::string& name, OP op = OP::NONE)
+: name(name), op(op)
 {}
 
-size_t calculate_idx() {
-    static size_t idx = 0;
-    size_t prev = idx;
-    ++idx;
-    return prev;
-}
-
-// TODO: убрать из глобального
-std::unordered_map<std::string, CircuitNode*> nodes = {};
 
 std::string get_name_in_brackets(std::string& line) {
     std::string name;
@@ -40,24 +30,23 @@ OP find_op(std::string& line) {
     } else if (line.find("XOR") != std::string::npos) {
         return OP::XOR;
     }
+
+    throw std::runtime_error("Cannot parse the operation");
 }
 
 
-void parse_line(std::string& line, std::string& output_node) {
+void parse_line(std::string& line, std::string& output_node, Nodes& nodes) {
 
     if (line[0] == '#') {
         return;
     }
 
-    size_t idx = calculate_idx();
     std::string name_in_brackets = get_name_in_brackets(line);
     if (line.find("INPUT") != std::string::npos) {
-        auto node = new CircuitNode(idx, name_in_brackets);
+        auto node = new CircuitNode(name_in_brackets);
         nodes.insert({name_in_brackets, node});     // TODO: name_before_eq copies or what??
         return;
     } else if (line.find("OUTPUT") != std::string::npos) {
-        auto node = new CircuitNode(idx, name_in_brackets);
-        nodes.insert({name_in_brackets, node});
         output_node = name_in_brackets;
         return;
     }
@@ -65,7 +54,7 @@ void parse_line(std::string& line, std::string& output_node) {
     size_t eq = line.find('=');
     size_t first_space = line.find(' ');
     std::string name_before_eq = line.substr(0, std::min(eq, first_space));
-    auto node = new CircuitNode(idx, name_before_eq, find_op(line));
+    auto node = new CircuitNode(name_before_eq, find_op(line));
     nodes.insert({name_before_eq, node});
 
     size_t comma = name_in_brackets.find(',');
@@ -84,7 +73,7 @@ void parse_line(std::string& line, std::string& output_node) {
     node->left = name_in_brackets;
 }
 
-std::string parse_bench(std::string& filename) {
+std::string parse_bench(std::string& filename, Nodes& nodes) {
     std::ifstream bench_file(filename);
     // TODO: can be several output_nodes?
     std::string output_node;
@@ -101,7 +90,7 @@ std::string parse_bench(std::string& filename) {
         if (line.empty())
             continue;
 
-        parse_line(line, output_node);
+        parse_line(line, output_node, nodes);
     }
 
     return output_node;
