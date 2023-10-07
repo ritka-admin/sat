@@ -79,8 +79,6 @@ void parse_line(std::string& line, std::string& output_node, Nodes& nodes) {
     node->left = name_in_brackets;
 }
 
-
-// TODO: add dfs for checking cycles
 std::string parse_bench(std::string& filename, Nodes& nodes) {
     std::ifstream bench_file(filename);
     // TODO: can be several output_nodes?
@@ -100,8 +98,5 @@ std::string parse_bench(std::string& filename, Nodes& nodes) {
 
         parse_line(line, output_node, nodes);
     }
-
-    std::vector<bool> visited(nodes.size(), false);
-
     return output_node;
 }

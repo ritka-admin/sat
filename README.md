@@ -1,5 +1,10 @@
 # sat
 
+```commandline
+cd src
+g++ parse/parse.cpp tseitin/tseitin.cpp validation/validate.cpp main.cpp -lz3 -o res
+```
+
 ### Описание алгоритма работы
 
 - Выбран алгоритм Цейтина, тк его размер выхода растёт линейно от размера Circuit SAT
@@ -12,4 +17,4 @@
 
 ### TODO
 
-- структуры файлов и инклуды проверить
+- инклуды проверить
