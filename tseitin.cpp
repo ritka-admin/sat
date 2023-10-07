@@ -3,8 +3,8 @@
 #include "tseitin.h"
 
 
-z3::expr tseitin(std::string& current_node, Nodes& nodes, z3::context& context, z3::expr_vector clauses) {
-
+// TODO: allocate instead of pushing back
+z3::expr tseitin(std::string& current_node, Nodes& nodes, z3::context& context, z3::expr_vector& clauses) {
     auto cur_var = context.bool_const(current_node.c_str());
 
     if (nodes[current_node]->op == OP::NONE) {
@@ -143,12 +143,14 @@ z3::expr tseitin(std::string& current_node, Nodes& nodes, z3::context& context, 
 void solve(std::string& output_node, Nodes& nodes) {
     z3::context context;
     z3::expr_vector clauses(context);
+    std::cout << "Tseitin started" << std::endl;
     tseitin(output_node, nodes, context, clauses);
     z3::solver solver(context);
-    solver.add(clauses);
-    // TODO: manually add and and check
-    std::cout << solver.assertions() << '\n';
-    std::cout << solver.check() << '\n';
-    // TODO: show only input nodes values
-    std::cout << solver.get_model() << '\n';
+
+    z3::expr_vector output_clause(context);
+    clauses.push_back(context.bool_const(output_node.c_str()));
+
+    solver.add(z3::mk_and(clauses));
+    std::cout << "Tseitin finished..." << std::endl;
+    std::cout << solver.check() << std::endl;
 }

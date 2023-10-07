@@ -1,12 +1,18 @@
 #include "parse.h"
 #include <fstream>
+#include <iostream>
 
 
-// TODO: add node destructors
-CircuitNode::CircuitNode(std::string& name, OP op = OP::NONE)
-: name(name), op(op)
+CircuitNode::CircuitNode(size_t node_id, std::string& name, OP op = OP::NONE)
+: idx(node_id), name(name), op(op)
 {}
 
+size_t calculate_idx() {
+    static size_t idx = 0;
+    size_t prev = idx;
+    ++idx;
+    return prev;
+}
 
 std::string get_name_in_brackets(std::string& line) {
     std::string name;
@@ -41,10 +47,11 @@ void parse_line(std::string& line, std::string& output_node, Nodes& nodes) {
         return;
     }
 
+    size_t idx = calculate_idx();
     std::string name_in_brackets = get_name_in_brackets(line);
     if (line.find("INPUT") != std::string::npos) {
-        auto node = new CircuitNode(name_in_brackets);
-        nodes.insert({name_in_brackets, node});     // TODO: name_before_eq copies or what??
+        auto node = new CircuitNode(idx, name_in_brackets);
+        nodes.insert({name_in_brackets, node});
         return;
     } else if (line.find("OUTPUT") != std::string::npos) {
         output_node = name_in_brackets;
@@ -54,14 +61,13 @@ void parse_line(std::string& line, std::string& output_node, Nodes& nodes) {
     size_t eq = line.find('=');
     size_t first_space = line.find(' ');
     std::string name_before_eq = line.substr(0, std::min(eq, first_space));
-    auto node = new CircuitNode(name_before_eq, find_op(line));
+    auto node = new CircuitNode(idx, name_before_eq, find_op(line));
     nodes.insert({name_before_eq, node});
 
     size_t comma = name_in_brackets.find(',');
 
     // if there is more than one child
     if (comma != std::string::npos) {
-        // TODO: check spaces!
         std::string first_child = name_in_brackets.substr(0, comma);
         std::string second_child = name_in_brackets.substr(comma + 2);
 
@@ -73,6 +79,8 @@ void parse_line(std::string& line, std::string& output_node, Nodes& nodes) {
     node->left = name_in_brackets;
 }
 
+
+// TODO: add dfs for checking cycles
 std::string parse_bench(std::string& filename, Nodes& nodes) {
     std::ifstream bench_file(filename);
     // TODO: can be several output_nodes?
@@ -92,6 +100,8 @@ std::string parse_bench(std::string& filename, Nodes& nodes) {
 
         parse_line(line, output_node, nodes);
     }
+
+    std::vector<bool> visited(nodes.size(), false);
 
     return output_node;
 }

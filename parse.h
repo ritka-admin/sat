@@ -8,10 +8,11 @@ enum OP { NOT, AND, OR, NOR, NAND, XOR, NONE};
 struct CircuitNode {
     std::string name;
     OP op;
+    size_t idx;
     std::string left;
     std::string right;
 
-    CircuitNode(std::string& name, OP op);
+    CircuitNode(size_t idx, std::string& name, OP op);
 };
 
 using Nodes = std::unordered_map<std::string, CircuitNode*>;
