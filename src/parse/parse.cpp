@@ -1,6 +1,7 @@
 #include "parse.h"
 #include <fstream>
 #include <iostream>
+#include <algorithm>
 
 
 CircuitNode::CircuitNode(size_t node_id, std::string& name, OP op = OP::NONE)
@@ -21,20 +22,25 @@ std::string get_name_in_brackets(std::string& line) {
     return line.substr(left_bracket + 1, right_bracket - left_bracket - 1);
 }
 
-// TODO: maybe make faster
 OP find_op(std::string& line) {
-    if (line.find("NOR") != std::string::npos) {
+
+    size_t eq = line.find('=');
+    size_t bracket = line.find('(');
+
+    auto value = line.substr(eq + 1, bracket - eq - 1);
+
+    if (value.find("NOR") != std::string::npos) {
         return OP::NOR;
-    } else if (line.find("NAND") != std::string::npos) {
+    } else if (value.find("NAND") != std::string::npos) {
         return OP::NAND;
-    } else if (line.find("OR") != std::string::npos) {
-        return OP::OR;
-    } else if (line.find("AND") != std::string::npos) {
-        return OP::AND;
-    } else if (line.find("NOT") != std::string::npos) {
-        return OP::NOT;
-    } else if (line.find("XOR") != std::string::npos) {
+    } else if (value.find("XOR") != std::string::npos) {
         return OP::XOR;
+    } else if (value.find("OR") != std::string::npos) {
+        return OP::OR;
+    } else if (value.find("AND") != std::string::npos) {
+        return OP::AND;
+    } else if (value.find("NOT") != std::string::npos) {
+        return OP::NOT;
     }
 
     throw std::runtime_error("Cannot parse the operation");
@@ -70,6 +76,10 @@ void parse_line(std::string& line, std::string& output_node, Nodes& nodes) {
     if (comma != std::string::npos) {
         std::string first_child = name_in_brackets.substr(0, comma);
         std::string second_child = name_in_brackets.substr(comma + 2);
+
+        if (first_child.empty() || second_child.empty() ) {
+            throw std::runtime_error(node->name + " represents a binary operator, but only one value was provided");
+        }
 
         node->left = first_child;
         node->right = second_child;

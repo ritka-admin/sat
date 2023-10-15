@@ -3,6 +3,8 @@
 #include "validation/validate.h"
 #include <iostream>
 
+#include <chrono>
+
 
 void solve(std::string& output_node, Nodes& nodes) {
     z3::context context;
@@ -34,6 +36,9 @@ void clean_nodes(Nodes& nodes) {
 int main() {
     Nodes nodes = {};
     std::string filename = "test.txt";
+    std::cout << filename << std::endl;
+
+    auto start = std::chrono::high_resolution_clock::now();
 
     std::cout << "Reading from file..." << std::endl;
     std::string output_node = parse_bench(filename, nodes);
@@ -44,6 +49,9 @@ int main() {
     std::cout << "[OK] Finished checking cycles" << std::endl;
 
     solve(output_node, nodes);
+
+    auto stop = std::chrono::high_resolution_clock::now();
+    std::cout << "Working time: " << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count() << " milliseconds" << std::endl;
 
     clean_nodes(nodes);
 }
